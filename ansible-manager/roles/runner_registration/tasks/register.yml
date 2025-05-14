@@ -1,0 +1,57 @@
+---
+- name: Register project runner
+  block:
+    - name: "[{{ item.name }}] Create a project-level runner"
+      gitlab_runner:
+        api_url: "{{ gitlab_url }}"
+        api_token: "{{ access_token }}"
+        state: present
+        active: true
+        description: "{{ item.name }}"
+        tag_list: ['{{ item.name }}']
+        run_untagged: false
+        locked: true # Lock to current project
+        maximum_timeout: "{{ item.maximum_timeout | default('3600')}}"
+        project: "{{ item.project_id }}"
+      become: true
+      when: item.project_id is defined
+      register: reg_gitlab_runner_output # Register module output to run C(gitlab-runner register) command in another task
+
+    - name: "[{{ item.name }}] Append runner template"
+      when: reg_gitlab_runner_output.runner.token is defined
+      shell: |
+        echo '{{ lookup("template", "templates/runner_config.j2") }}' >> /etc/gitlab-runner/config.toml
+      become: true
+
+- name: Register instance runner
+  block:
+    - name: "[{{ item.name }}] Create an instance-level runner"
+      gitlab_runner:
+        api_url: "{{ gitlab_url }}"
+        api_token: "{{ access_token }}"
+        state: present
+        active: true
+        description: "{{ item.name }}"
+        tag_list: ['{{ item.name }}']
+        run_untagged: false
+        locked: false
+        maximum_timeout: "{{ item.maximum_timeout | default('3600') }}"
+      become: true
+      when: item.project_id is undefined
+      register: reg_gitlab_runner_output
+
+    - name: "[{{ item.name }}] Append runner template"
+      when: reg_gitlab_runner_output.runner.token is defined
+      shell: |
+        echo '{{ lookup("template", "templates/runner_config.j2") }}' >> /etc/gitlab-runner/config.toml
+      become: true
+
+- name: "[{{ item.name }}] Verify runner configuration"
+  command:
+    cmd: sudo gitlab-runner verify
+
+- name: "[{{ item.name }}] Apply the Fargate configuration template"
+  template:
+    src: "templates/fargate_config.j2"
+    dest: "/etc/gitlab-runner/fargate-{{ item.name }}.toml"
+  become: true

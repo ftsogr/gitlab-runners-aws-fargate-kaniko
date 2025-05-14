@@ -1,0 +1,5 @@
+ansible_connection: ssh
+ansible_python_interpreter: /usr/bin/python3
+gitlab_url: "https://gitlab.ftso.gr/"
+etc_hosts:
+  - "10.0.3.5 gitlab.ftso.gr"

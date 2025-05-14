@@ -1,0 +1,148 @@
+---
+- name: Update all packages to the latest version
+  apt:
+    update_cache: true
+    upgrade: dist
+  become: true
+
+- name: Ensure directories for GitLab Runner exist
+  file:
+    path: "/opt/gitlab-runner/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - metadata
+    - builds
+    - cache
+  become: true
+
+- name: Download the GitLab Runner installation script
+  get_url:
+    url: "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh"
+    dest: "/tmp/script.deb.sh"
+    mode: '0755'  # Make the script executable
+
+- name: Run the GitLab Runner installation script
+  shell: "/tmp/script.deb.sh"
+  args:
+    executable: /bin/bash
+
+- name: Install GitLab Runner
+  apt:
+    name: gitlab-runner
+    state: present
+    update_cache: true
+  become: true
+
+- name: Install Fargate driver
+  get_url:
+    url: "https://gitlab-runner-custom-fargate-downloads.s3.amazonaws.com/latest/fargate-linux-arm64"
+    dest: "/opt/gitlab-runner/fargate"
+    mode: '0755'
+  become: true
+
+- name: Update and install required packages
+  apt:
+    name:
+      - python3-pip
+      - python3-gitlab
+      - python3-requests
+      - software-properties-common
+      - unzip
+    state: present
+    update_cache: true
+  become: true
+
+- name: Add Ansible PPA
+  become: true
+  apt_repository:
+    repo: ppa:ansible/ansible
+    state: present
+
+- name: Install Ansible
+  apt:
+    name:
+      - ansible
+    state: present
+    update_cache: true
+  become: true
+
+- name: Download awscliv2 installer.
+  unarchive:
+    src: "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip"
+    dest: "/tmp"
+    remote_src: true
+    creates: '/tmp/aws'
+    mode: 0755
+
+- name: Run the aws-cli installer
+  command:
+  args:
+    cmd: "/tmp/aws/install"
+    creates: /usr/local/bin/aws
+  become: true
+
+- name: Start gitlab-runner service
+  service:
+    name: gitlab-runner
+    enabled: true
+    state: started
+  become: true
+
+- name: Update /etc/gitlab-runner/config.toml "concurrent" value
+  lineinfile:
+    path: /etc/gitlab-runner/config.toml
+    regexp: '^concurrent = (.*)$'
+    line: 'concurrent = 50'
+    backrefs: true
+
+- name: Update /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ item }}"
+  loop: "{{ etc_hosts }}"
+
+- name: Copy the shell script
+  copy:
+    src: check_long_running_tasks.sh
+    dest: /home/ubuntu/check_long_running_tasks.sh
+    mode: '0755'
+  become: yes
+
+- name: Create a cron job to run the script every hour
+  cron:
+    name: "check long running tasks every hour"
+    user: root
+    minute: "0"
+    job: "/home/ubuntu/check_long_running_tasks.sh  > /var/log/script.log 2>&1"
+
+- name: Install collection community.general
+  community.general.ansible_galaxy_install:
+    type: collection
+    name: community.general
+
+- name: Register ansible runner
+  block:
+    - name: "Create a ansible runner"
+      gitlab_runner:
+        api_url: "{{ gitlab_url }}"
+        api_token: "{{ access_token }}"
+        state: present
+        active: true
+        description: "ansible_runner"
+        tag_list: ['ansible_runner']
+        run_untagged: false
+        locked: true # Lock to current project
+        project: 1651
+      become: true
+      register: reg_gitlab_runner_ansible # Register module output to run C(gitlab-runner register) command in another task
+
+    - name: "Append runner template"
+      when: reg_gitlab_runner_ansible.runner.token is defined
+      shell: |
+        echo '{{ lookup("template", "templates/ansible_runner_config.j2") }}' >> /etc/gitlab-runner/config.toml
+      become: true
+
+- name: "Verify ansible-runner configuration"
+  command:
+    cmd: sudo gitlab-runner verify

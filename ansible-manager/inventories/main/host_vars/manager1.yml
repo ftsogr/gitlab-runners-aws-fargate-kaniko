@@ -1,0 +1,11 @@
+---
+ansible_host: 10.0.3.10
+ansible_port: 22
+ansible_ssh_user: ubuntu
+ansible_private_key_file: ~/ftso/clients/ssh-runner-manager.pem
+runners:
+  - name: "ftso-java"
+    project_id: 2179
+    limit: 5
+    cluster: "ftso-cluster"
+    task: "java-task-def"

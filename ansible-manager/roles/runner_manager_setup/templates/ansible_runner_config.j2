@@ -1,0 +1,12 @@
+[[runners]]
+  name = "ansible-runner"
+  url = "{{ gitlab_url }}"
+  id = {{ reg_gitlab_runner_ansible.runner.id }}
+  token = "{{ reg_gitlab_runner_ansible.runner.token }}"
+  executor = "shell"
+  [runners.custom_build_dir]
+  [runners.cache]
+    MaxUploadedArchiveSize = 0
+    [runners.cache.s3]
+    [runners.cache.gcs]
+    [runners.cache.azure]

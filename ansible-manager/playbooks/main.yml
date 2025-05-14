@@ -1,0 +1,12 @@
+---
+- name: Role - Runner Manager Setup
+  hosts: manager-servers
+  become: true
+  roles:
+    - { role: roles/runner_manager_setup, tags: ["runner_manager_setup"] }
+
+- name: Role - Runner Registration
+  hosts: manager-servers
+  become: true
+  roles:
+    - { role: roles/runner_registration, tags: ["runner_registration"] }

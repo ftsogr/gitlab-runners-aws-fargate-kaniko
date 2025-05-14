@@ -1,0 +1,4 @@
+---
+- name: Loop - Register project runners and apply configurations
+  loop: "{{ runners }}"
+  include_tasks: register.yml

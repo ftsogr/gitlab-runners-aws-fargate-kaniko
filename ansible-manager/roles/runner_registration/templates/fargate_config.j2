@@ -1,0 +1,18 @@
+LogLevel = "debug"
+LogFormat = "text"
+
+[Fargate]
+  Cluster = "{{ item.cluster }}"
+  Region = "us-west-2"
+  Subnet = "subnet-xxxxxxxx"
+  SecurityGroup = "sg-xxxxxxxx"
+  PropagateTags = true
+  TaskDefinition = "{{ item.task }}"
+  EnablePublicIP = false
+
+[TaskMetadata]
+  Directory = "/opt/gitlab-runner/metadata"
+
+[SSH]
+  Username = "root"
+  Port = 22

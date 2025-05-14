@@ -1,0 +1,19 @@
+
+[[runners]]
+  name = "{{ item.name }}"
+  limit = {{ item.limit }}
+  url = "{{ gitlab_url }}"
+  id = {{ reg_gitlab_runner_output.runner.id }}
+  token = "{{ reg_gitlab_runner_output.runner.token }}"
+  executor = "custom"
+  builds_dir = "/opt/gitlab-runner/builds"
+  cache_dir = "/opt/gitlab-runner/cache"
+  [runners.custom]
+    config_exec = "/opt/gitlab-runner/fargate"
+    config_args = ["--config", "/etc/gitlab-runner/fargate-{{ item.name }}.toml", "custom", "config"]
+    prepare_exec = "/opt/gitlab-runner/fargate"
+    prepare_args = ["--config", "/etc/gitlab-runner/fargate-{{ item.name }}.toml", "custom", "prepare"]
+    run_exec = "/opt/gitlab-runner/fargate"
+    run_args = ["--config", "/etc/gitlab-runner/fargate-{{ item.name }}.toml", "custom", "run"]
+    cleanup_exec = "/opt/gitlab-runner/fargate"
+    cleanup_args = ["--config", "/etc/gitlab-runner/fargate-{{ item.name }}.toml", "custom", "cleanup"]
