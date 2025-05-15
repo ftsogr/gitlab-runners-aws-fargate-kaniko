@@ -1,0 +1,18 @@
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+stages:
+  - runner_registration
+
+run_ansible_playbook:
+  stage: runner_registration
+  before_script:
+    - export ANSIBLE_HOST_KEY_CHECKING=False
+    - mkdir -p ~/ftso/clients
+    - echo "$SSH_PRIVATE_KEY" > ~/ftso/clients/ssh-runner-manager.pem
+    - chmod 600 ~/ftso/clients/ssh-runner-manager.pem
+  script:
+    - ansible-playbook playbooks/main.yml -i inventories/main/hosts  --tag "runner_registration" --extra-vars "access_token=${ACCESS_TOKEN}"
+  tags:
+    - ansible_runner
