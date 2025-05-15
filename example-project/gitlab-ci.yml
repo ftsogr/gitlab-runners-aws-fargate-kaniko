@@ -1,0 +1,22 @@
+ default:
+  tags:
+    - ftso-java
+
+stages:
+  # MAIN
+  - build
+
+# Stage 1: Build
+build:
+  stage: build
+  tags:
+    - ftso-java
+  script:
+    - export JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64/
+    - /usr/lib/jvm/temurin-21-jdk-amd64/bin/java -version
+    - mvn -U clean package -Pprod -DskipTests -DaltDeploymentRepository
+    - ls -la target/quarkus-app/
+  artifacts:
+    paths:
+      - target/quarkus-app
+
