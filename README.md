@@ -32,7 +32,7 @@ This guide builds a secure, scalable, and cost-effective CI runners setup using:
 ## 🧰 Prerequisites
 
 - ✅ GitLab server reachable at `https://gitlab.ftso.gr`
-- ✅ Admin token or group runner registration token
+- ✅ Admin registration token
 - ✅ SSH access to EC2 manager (`ansible_host = manager`)
 - ✅ Docker registry access (e.g., ECR)
 
