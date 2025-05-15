@@ -1,0 +1,30 @@
+variables:
+  AWS_REGION: us-west-2
+  ECR_URL: demo.dkr.ecr.eu-central-1.amazonaws.com
+  IMAGE_NAME: java-runner
+  IMAGE_TAG: latest
+  CLUSTER_NAME: ftso-cluster
+  TASK_FAMILY: java-task-def
+
+stages:
+  - build_and_push
+
+build-and-push:
+  stage: build_and_push
+  tags:
+  - shared
+
+  script:
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+    - aws ecr describe-repositories --repository-names $IMAGE_NAME --region $AWS_REGION || aws ecr create-repository --repository-name $IMAGE_NAME --region $AWS_REGION
+    - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URL
+    - docker build --no-cache -t $ECR_URL/$IMAGE_NAME:$IMAGE_TAG .
+    - docker push $ECR_URL/$IMAGE_NAME:$IMAGE_TAG
+    - aws ecs describe-task-definition --task-definition "$TASK_FAMILY" --region "$AWS_REGION" --output json | jq '.taskDefinition | del(.taskDefinitionArn, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy, .revision) | .containerDefinitions[0].image = "'${ECR_URL}/${IMAGE_NAME}:${IMAGE_TAG}'"' > new-task-def.json   
+    - aws ecs register-task-definition --cli-input-json file://new-task-def.json --region="$AWS_REGION" > /dev/null
+    - NEW_REVISION=$(aws ecs describe-task-definition --task-definition "${TASK_FAMILY}"  --region="$AWS_REGION" | jq -r '.taskDefinition.revision')
+  
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
