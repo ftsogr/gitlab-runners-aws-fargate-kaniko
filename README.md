@@ -135,10 +135,18 @@ gitlab_url: "https://your.gitlab.domain"
 
 ---
 
-## 👏 Kudos
+## 👏 Credits 
 
-Kudos to the **Logicea DevOps Team** for inspiring infrastructure discipline.
+Kudos to the **Logicea DevOps Team**  
+🌐 Visit [logicea.com](https://logicea.com) for more.
 
-Licensed under MIT © 2025 Demetris Diamantis
+---
+
+## 🧑‍💻 Contributors
+- [Demetris Diamantis](https://github.com/ftsogr)
+- [Nick Bouris](https://www.linkedin.com/in/nbrs/)
+- [Georgios Zoutis](https://github.com/Necrokefalos)
+- [Panagiotis Stavrinakis](https://github.com/pan0sSt)
+- [Panagiotis Tzaferos](https://github.com/ptzaf)
 
 
