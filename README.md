@@ -135,6 +135,12 @@ gitlab_url: "https://your.gitlab.domain"
 
 ---
 
+## 🧵 Related Projects
+
+To build this infrastructure with GitLab CE on AWS using Aurora, ElastiCache and S3, refer to the [gitlab-aws-deployment](https://github.com/ftsogr/gitlab-aws-deployment) repository.
+
+---
+
 ## 👏 Credits 
 
 Kudos to the **Logicea DevOps Team**  
