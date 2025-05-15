@@ -1,6 +1,6 @@
 # GitLab CI Runners on Fargate Spot with Kaniko
 
-This guide builds a secure, scalable, and cost-effective CI runner setup using:
+This guide builds a secure, scalable, and cost-effective CI runners setup using:
 
 - **GitLab CE** deployed at `gitlab.ftso.gr`
 - **ARM EC2 Manager** to register and launch jobs
@@ -23,7 +23,7 @@ This guide builds a secure, scalable, and cost-effective CI runner setup using:
 | Step | Directory         | Description                                 |
 |------|-------------------|---------------------------------------------|
 | 01   | `terraform/`       | Deploys ECS cluster and roles               |
-| 02   | `ansible-manager/` | Configures EC2 ARM runner                   |
+| 02   | `ansible-manager/` | Configures EC2 ARM runner manager                   |
 | 03   | `kaniko-image/`    | Dockerfile for Kaniko container builds     |
 | 04   | `example-project/` | Sample pipeline using Kaniko in CI         |
 
